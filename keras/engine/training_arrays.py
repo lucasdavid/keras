@@ -429,18 +429,14 @@ def test_loop(model, f, ins,
             batch_logs = {'batch': step, 'size': 1}
             callbacks._call_batch_hook('test', 'begin', step, batch_logs)
             batch_outs = f(ins)
-            if isinstance(batch_outs, list):
-                if step == 0:
-                    outs.extend([0.] * len(batch_outs))
-                for i, batch_out in enumerate(batch_outs):
-                    if i in stateful_metric_indices:
-                        outs[i] = float(batch_out)
-                    else:
-                        outs[i] += batch_out
-            else:
-                if step == 0:
-                    outs.append(0.)
-                outs[0] += batch_outs
+            batch_outs = to_list(batch_outs)
+            if step == 0:
+                outs.extend([0.] * len(batch_outs))
+            for i, batch_out in enumerate(batch_outs):
+                if i in stateful_metric_indices:
+                    outs[i] = float(batch_out)
+                else:
+                    outs[i] += batch_out
 
             if hasattr(model, 'metrics_names'):
                 for l, o in zip(model.metrics_names, batch_outs):
